@@ -1,0 +1,6 @@
+# TeX stuff
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.pdf

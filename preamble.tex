@@ -1,0 +1,131 @@
+% Packages
+% --------
+%	 Necessary
+\usepackage{geometry} 						% geometry - page dimensions
+\usepackage[parfill]{parskip}				% parskip - to use blank line to sep paragraphs
+\usepackage{titling}						% title formatting
+\usepackage{enumitem}
+
+\usepackage{amsmath}						% AMS - math, fonts, symbols, theorem
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}						% mathtools - \coloneqq
+
+\usepackage{tikz}							% tikz - graphs
+
+\usepackage{listings}
+
+\usepackage{hyperref}
+
+% 	Additional
+\usepackage{graphicx}						% graphicx - importing graphics from file
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage{tgbonum}
+
+\usepackage{forest}							% forest - easy trees
+\usepackage{tikzsymbols}					% tikzsymbols - just adds some symbols
+% tikzlibrary summary: 
+% tex.stackexchange.com/questions/42611/list-of-available-tikz-libraries-with-a-short-introduction/491626
+\usetikzlibrary{arrows.meta}				% arrows.meta - customizable arrow tips
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\usetikzlibrary{shadows}
+\usetikzlibrary{automata}
+\usetikzlibrary{calc}
+\usetikzlibrary{fit}
+
+\usepackage{syntax}
+
+\pagenumbering{gobble}
+
+\tikzset{>={Latex[width=1.5mm, length=2mm]},%
+	every state/.style={thick, fill=gray!10},
+	initial text=$ $,%
+	}
+\usepackage{xcolor}							% xcolor - adds additional colors
+
+\usepackage{marginnote}						% marginnote - see name
+
+\usepackage{multirow}						% multirow - sort of a tabular environment of text
+\usepackage{bigdelim}						% bigdelim - used with multirow once to make brackets on tables
+\usepackage{array}							% array - extends arrary and tabular environment
+\usepackage{makecell}						% makecell - adjust cell cizes within tabular environment
+
+\usepackage[bottom]{footmisc}
+% Customizations
+
+\pretitle{\begin{center}\Large\bfseries}		% titling format
+\posttitle{\par\end{center}\vskip 0cm}
+\preauthor{\begin{center}\large}
+\postauthor{\end{center}}
+\predate{\par\normalsize\centering}
+\postdate{\par}
+
+\geometry{margin=1in}
+
+\setlength{\droptitle}{-5em}
+
+\newcommand{\xoverbrace}[2][\vphantom{\dfrac{A}{A}}]{\overbrace{#1#2}}
+\newcommand{\xunderbrace}[2][\vphantom{\dfrac{A}{A}}]{\underbrace{#1#2}}
+
+\newtheoremstyle{customnumber} % name
+	{}% space above
+	{}% space below
+	{\normalfont}% body font
+	{}% indent 
+	{\bfseries}% head font
+	{:}% punctuation between head/body
+	{ }% space after head: " " = normal whitespace
+	{\thmname{#1}\thmnote{ #3}}% head format
+
+\theoremstyle{customnumber}
+\newtheorem*{exercise}{Exercise}
+\newenvironment{absolutelynopagebreak}
+	{\par\nobreak\vfil\penalty0\vfilneg\vtop\bgroup}
+	{\par\xdef\tpd{\the\prevdepth}\egroup\prevdepth=\tpd}
+	
+\theoremstyle{definition}
+\newtheorem{defi}{Definition}
+
+\newtheorem{theorem}{Theorem}
+
+\newtheorem{axiom}{Axiom}
+
+\newtheorem{ex}{Example}[section]
+
+\newtheorem{prop}{Proposition}[section]
+
+\newtheoremstyle{named}{}{}{\itshape}{}{\bfseries}{.}{ }{\thmnote{#3}}
+\theoremstyle{named}
+\newtheorem*{namedtheorem}{}
+
+\newcommand{\stcomp}[1]{{#1}^\complement}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+
+\lstset{tabsize=3, numbers=left, basicstyle=\ttfamily, escapeinside=~~, xleftmargin=1cm}
+\let\origthelstnumber\thelstnumber
+\makeatletter
+\newcommand*\Suppressnumber{%
+	\lst@AddToHook{OnNewLine}{%
+		\let\thelstnumber\relax%
+		\advance\c@lstnumber-\@ne\relax%
+	}%
+}
+\newcommand*\Reactivatenumber{%
+	\lst@AddToHook{OnNewLine}{%
+		\let\thelstnumber\origthelstnumber%
+		\advance\c@lstnumber\@ne\relax%
+	}%
+}
+\makeatother
+
+\def\smallqed{\hfill\smash{\scalebox{.5}{$\square$}}}
+
+
+\DeclareMathOperator{\adj}{adj}
