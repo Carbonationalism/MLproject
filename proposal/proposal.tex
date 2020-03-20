@@ -1,14 +1,31 @@
 \documentclass[notitlepage, 12pt]{article}
 
-\input{../preamble.tex}
-
+\input{../texstuff/preamble.tex}
 \title{Machine Learning Project Proposal}
-\author{}
+\author{
+  Joseph Green\\
+  \texttt{xxxxxxx@auburn.edu}
+  \and
+  Tripp Isbell\\
+  \texttt{cai0004@auburn.edu}
+  \and
+  James Lee\\
+  \texttt{xxxxxxx@auburn.edu}
+}
 \date{}
 
+\bibliographystyle{IEEEtran}
 \begin{document}
 
-
 \maketitle
+For our project we propose to build a chess engine.
+\section*{Introduction}
+The game of chess has been around for many centuries, and with the emergence of computers in the 20th century came the idea of designing a machine to algorithmically play chess. Chess is a two-person, zero-sum minimax game \cite{vonneumann} with perfect information, so we should (not we as in the project group, we as in 'humanity') be able to design a machine that plays optimally. Our ability to do so, however, is limited by the complexity of the rules and the combinatorial explosion of the possible board states. Claude Shannon was one of the first to propose an algorithm that minimaxes using a restricted set of actions evaluated by the current board positions \cite{shannon}. 
 
+Since then, many advancements have been made in the pursuit of an optimal chess engine. In 1997, IBM's Deep Blue famously defeated then No. 1 chess player Garry Kasparov. The current state of the art chess engine is \href{https://stockfishchess.org/}{StockFish}, which frequently wins the \href{https://en.wikipedia.org/wiki/Top_Chess_Engine_Championship}{Top Chess Engine Championship}. Both Deep Blue and StockFish are conventional chess engines, in that they employ alpha-beta pruning to narrow the search space of possible moves \cite{alphabeta}. 
+
+Deep reinforcement learning has presented a new approach to building an optimal chess engine. Most notably, DeepMind has developed AlphaZero \cite{alphazero}, a chess (as well as shogi and Go) which uses reinforcement learning and has achieved state of the art performance in chess, defeating top engines like StockFish. AlphaZero uses their self-play learning approach, which uses Monte Carlo tree searches optimized with deep neural networks, an approach generalized from their AlphaGo Zero\cite{alphagozero}.
+
+We are neither good at chess, nor good at reinforcement learning (and also we don't have near the resources of DeepMind), so we don't expect to design an engine to achieve near the performance of these others. However, we'd like to develop a modest engine using reinforcement learning that performs somewhat well and can be trained in a reasonable amount of time. Since StockFish does provide varying levels of handicaps (achieved by limiting the amount of lookahead moves in their search), we can use it as both a baseline (StockFish level 1) and an oracle (StockFish unleashed). We hope to build something maybe competitive with StockFish 3 or so.
+\bibliography{../texstuff/papers}
 \end{document}
