@@ -1,0 +1,6 @@
+[submodule "alpha-zero-general"]
+	path = alpha-zero-general
+	url = https://github.com/suragnair/alpha-zero-general
+[submodule "python-chess"]
+	path = python-chess
+	url = https://github.com/niklasf/python-chess
