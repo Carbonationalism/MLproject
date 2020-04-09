@@ -2,6 +2,7 @@ import math
 import numpy as np
 EPS = 1e-8
 import sys
+import resource
 sys.path.append('python-chess')
 from chess import Board
 
@@ -21,6 +22,9 @@ class MCTS():
 
         self.Es = {}        # stores game.getGameEnded ended for board s
         self.Vs = {}        # stores game.getValidMoves for board s
+
+        resource.setrlimit(resource.RLIMIT_STACK, (2**29, -1))
+        sys.setrecursionlimit(10**6)
 
     def getActionProb(self, canonicalBoard, temp=1):
         """
