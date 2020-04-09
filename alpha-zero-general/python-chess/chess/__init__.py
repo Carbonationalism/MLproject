@@ -1880,7 +1880,7 @@ class Board(BaseBoard):
         slow.
         """
 ### MODIFICATION: we need a slightly different draw criteria for recursion depth issues (and checking move repetitions is slow)
-        if self.can_claim_thirty_moves():
+        if self.can_claim_x_moves(15):
             return True
 ###
         # Seventyfive-move rule.
@@ -2044,13 +2044,14 @@ class Board(BaseBoard):
 
         return False
 ### MODIFICATION
-    def can_claim_thirty_moves(self) -> bool:
+    def can_claim_x_moves(self, x) -> bool:
         """
         As per our rules, the thirty-move rule without capture is automatically a draw.
         """
-        if self.halfmove_clock >= 60:
-            if any(self.generate_legal_moves()):
-                return True
+        if self.halfmove_clock >= 2*x:
+            #if any(self.generate_legal_moves()):
+            #    return True
+            return True
         return False
 ###
 
