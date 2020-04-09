@@ -1,7 +1,13 @@
 from Coach import Coach
-from othello.OthelloGame import OthelloGame as Game
-from othello.pytorch.NNet import NNetWrapper as nn
+import sys
+sys.path.append('python-chess/')
+sys.path.append('python-chess/pytorch')
+# from othello.OthelloGame import OthelloGame as Game
+# from othello.pytorch.NNet import NNetWrapper as nn
+from HalfchessGame import HalfchessGame as Game
+from NNet import NNetWrapper as HalfchessNNet
 from utils import *
+
 
 args = dotdict({
     'numIters': 1000,
