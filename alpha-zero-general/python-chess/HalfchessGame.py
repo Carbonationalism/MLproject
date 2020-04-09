@@ -12,6 +12,7 @@ class HalfchessGame(Game):
 	Half chess game described at https://chessvariants.com/small.dir/halfchess.html
 	"""
 	def __init__(self):
+		sys.setrecursionlimit(1000000)
 		self.loadActions()
 
 	def getInitBoard(self):
