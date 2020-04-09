@@ -28,7 +28,7 @@ args = dotdict({
 
 if __name__ == "__main__":
     g = Game()
-    nnet = nn(g)
+    nnet = HalfchessNNet(g)
 
     if args.load_model:
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
