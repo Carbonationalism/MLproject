@@ -1880,7 +1880,9 @@ class Board(BaseBoard):
         slow.
         """
 ### MODIFICATION: we need a slightly different draw criteria for recursion depth issues (and checking move repetitions is slow)
-        if self.can_claim_x_moves(15):
+        if self.fullmove_number >= 500:
+            return True
+        if self.can_claim_x_moves(12):
             return True
 ###
         # Seventyfive-move rule.
@@ -1894,6 +1896,8 @@ class Board(BaseBoard):
         # Stalemate or checkmate.
         if not any(self.generate_legal_moves()):
             return True
+
+        return False
 
         # if claim_draw:
         #     # Claim draw, including by threefold repetition.

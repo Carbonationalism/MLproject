@@ -5,7 +5,7 @@ from Game import Game
 import chess
 import numpy as np
 import pickle
-eps=1e-8
+eps=1e-3
 
 class HalfchessGame(Game):
 	"""

@@ -85,7 +85,7 @@ class MCTS():
         if self.Es[s]!=0:
             # terminal node
             return -self.Es[s]
-
+        import pdb; pdb.set_trace()
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.nnet.predict(canonicalBoard.toarray()) ### modified to convert the chess board to array
