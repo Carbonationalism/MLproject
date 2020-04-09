@@ -49,7 +49,7 @@ class HalfchessGame(Game):
 		return moves
 
 	def getGameEnded(self, board, player):
-		over = board.is_game_over()
+		over = board.is_game_over(claim_draw=True)
 		if not over:
 			return 0
 		result = board.result()

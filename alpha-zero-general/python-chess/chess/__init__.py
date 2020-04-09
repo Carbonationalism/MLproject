@@ -1879,9 +1879,13 @@ class Board(BaseBoard):
         unless *claim_draw* is given. Note that checking the latter can be
         slow.
         """
-        # Seventyfive-move rule.
-        if self.is_seventyfive_moves():
+### MODIFICATION: we need a slightly different draw criteria for recursion depth issues (and checking move repetitions is slow)
+        if self.can_claim_thirty_moves():
             return True
+###
+        # Seventyfive-move rule.
+        # if self.is_seventyfive_moves():
+        #     return True
 
         # Insufficient material.
         if self.is_insufficient_material():
@@ -1891,12 +1895,12 @@ class Board(BaseBoard):
         if not any(self.generate_legal_moves()):
             return True
 
-        if claim_draw:
-            # Claim draw, including by threefold repetition.
-            return self.can_claim_draw()
-        else:
-            # Fivefold repetition.
-            return self.is_fivefold_repetition()
+        # if claim_draw:
+        #     # Claim draw, including by threefold repetition.
+        #     return self.can_claim_draw()
+        # else:
+        #     # Fivefold repetition.
+        #     return self.is_fivefold_repetition()
 
     def result(self, *, claim_draw: bool = False) -> str:
         """
@@ -2039,6 +2043,16 @@ class Board(BaseBoard):
                 return True
 
         return False
+### MODIFICATION
+    def can_claim_thirty_moves(self) -> bool:
+        """
+        As per our rules, the thirty-move rule without capture is automatically a draw.
+        """
+        if self.halfmove_clock >= 60:
+            if any(self.generate_legal_moves()):
+                return True
+        return False
+###
 
     def can_claim_threefold_repetition(self) -> bool:
         """
