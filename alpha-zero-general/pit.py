@@ -1,5 +1,6 @@
 import sys
 sys.path.append('python-chess/')
+sys.path.append('python-chess/pytorch/')
 import chess
 import Arena
 from MCTS import MCTS
@@ -8,6 +9,7 @@ from MCTS import MCTS
 #from othello.pytorch.NNet import NNetWrapper as NNet
 from HalfchessGame import HalfchessGame
 from HalfchessPlayers import *
+from NNet import NNetWrapper as NNet
 
 
 import numpy as np
@@ -32,7 +34,7 @@ nn = NNet(g)
 nn.load_checkpoint('./pretrained_models/halfchess/pytorch/','1stattempt_best.pth.tar')
 args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
 mcts = MCTS(g, nn, args)
-nnp = lamda x: np.argmax(mcts.getActionProb(x, temp=0))
+nnp = lambda x: np.argmax(mcts.getActionProb(x, temp=0))
 
 
 if human_vs_cpu:
@@ -46,6 +48,6 @@ if human_vs_cpu:
 
 #     player2 = n2p  # Player 2 is neural network if it's cpu vs cpu.
 
-arena = Arena.Arena(player1, nn, g, display=str)
+arena = Arena.Arena(rp, nnp, g, display=str)
 
 print(arena.playGames(2, verbose=True))
