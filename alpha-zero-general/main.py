@@ -1,7 +1,7 @@
 from Coach import Coach
 import sys
 sys.path.append('python-chess/')
-sys.path.append('python-chess/pytorch')
+sys.path.append('python-chess/pytorch/')
 # from othello.OthelloGame import OthelloGame as Game
 # from othello.pytorch.NNet import NNetWrapper as nn
 from HalfchessGame import HalfchessGame as Game

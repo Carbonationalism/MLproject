@@ -54,6 +54,11 @@ class Coach():
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
+
+### MODIFICATION: again have to take complementary mirrored action for black
+            num_actions = self.game.getActionSize()
+            action = int((num_actions - 1) * ((1 - curPlayer)//2) + (curPlayer * action))
+###
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
             r = self.game.getGameEnded(board, self.curPlayer)
