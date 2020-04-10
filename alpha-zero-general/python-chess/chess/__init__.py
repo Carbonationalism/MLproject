@@ -75,7 +75,10 @@ STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 """The board part of the FEN for the standard chess starting position."""
 
 ### Modification:
-""" feature values for pieces, based on Fischer relative valuations """
+""" feature values for pieces, based on Fischer relative valuations 
+    of course these don't really hold up in half chess, in particular
+    bishops are probably a lot worse than 3.25
+"""
 features = [0, 1, 3, 3.25, 5, 9, 100]
 ### 
 
@@ -162,6 +165,7 @@ SQUARES_180 = [square_mirror(sq) for sq in SQUARES]
 
 ### MODIFICATION
 SQUARES_180_HALF = [sq for sq in SQUARES_180 if (sq % 8) > 3]
+SQUARES_180_QUARTER = [sq for sq in SQUARES_180 if (sq % 8) > 3 and (sq < 32)]
 ###
 
 Bitboard = int
@@ -476,7 +480,6 @@ class Move:
             return SQUARE_NAMES[self.from_square] + SQUARE_NAMES[self.to_square]
         else:
             return "0000"
-
 
     def xboard(self) -> str:
         return self.uci() if self else "@@@@"

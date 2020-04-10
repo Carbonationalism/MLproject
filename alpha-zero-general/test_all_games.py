@@ -55,6 +55,7 @@ class TestAllGames(unittest.TestCase):
     @staticmethod
     def execute_game_test(game, neural_net):
         rp = RandomPlayer(game).play
+        #hp = HumanPlayer(game).play
 
         args = dotdict({'numMCTSSims': 25, 'cpuct': 1.0})
         mcts = MCTS(game, neural_net(game), args)

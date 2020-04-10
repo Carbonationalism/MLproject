@@ -52,6 +52,7 @@ class MCTS():
             probs[bestA]=1
             return probs
 
+        # TODO: vectorize this with numpy since we've got a large action space
         counts = [x**(1./temp) for x in counts]
         counts_sum = float(sum(counts))
         probs = [x/counts_sum for x in counts]
@@ -80,12 +81,19 @@ class MCTS():
 
         s = self.game.stringRepresentation(canonicalBoard)
 
-        if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
-        if self.Es[s]!=0:
-            # terminal node
-            return -self.Es[s]
-        
+### MODIFICATION: can't store things like Es since ending depends on move count and we want state indep. of move count
+        result = self.game.getGameEnded(canonicalBoard, 1)
+        if result != 0:
+            return -result
+###
+
+        # if s not in self.Es:
+        #     self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
+        # if self.Es[s]!=0:
+        #     # terminal node
+        #     return -self.Es[s]
+
+
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.nnet.predict(canonicalBoard.toarray()) ### modified to convert the chess board to array
@@ -116,16 +124,27 @@ class MCTS():
         best_act = -1
 
         # pick the action with the highest upper confidence bound
-        for a in range(self.game.getActionSize()):
-            if valids[a]:
-                if (s,a) in self.Qsa:
-                    u = self.Qsa[(s,a)] + self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,a)])
-                else:
-                    u = self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s] + EPS)     # Q = 0 ?
+        # for a in range(self.game.getActionSize()):
+        #     if valids[a]:
+        #         if (s,a) in self.Qsa:
+        #             u = self.Qsa[(s,a)] + self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,a)])
+        #         else:
+        #             u = self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s] + EPS)     # Q = 0 ?
 
-                if u > cur_best:
-                    cur_best = u
-                    best_act = a
+        #         if u > cur_best:
+        #             cur_best = u
+        #             best_act = a
+### MODIFICATION: the above is slow
+        for a in np.nonzero(valids)[0]:
+            if (s,a) in self.Qsa:
+                u = self.Qsa[(s,a)] + self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,a)])
+            else:
+                u = self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s] + EPS)     # Q = 0 ?
+
+            if u > cur_best:
+                cur_best = u
+                best_act = a              
+###
 
         a = best_act
         next_s, next_player = self.game.getNextState(canonicalBoard, 1, a)

@@ -49,7 +49,7 @@ class HalfchessGame(Game):
 		return moves
 
 	def getGameEnded(self, board, player):
-		over = board.is_game_over(claim_draw=True)
+		over = board.is_game_over()
 		if not over:
 			return 0
 		result = board.result()
@@ -62,8 +62,11 @@ class HalfchessGame(Game):
 		
 
 	def getCanonicalForm(self, board, player):
-		# board should be kept cannonical
-		return board
+		# flip board to white
+		if board.turn == chess.BLACK:
+			return board.mirror()
+		else:
+			return board
 		
 
 	def getSymmetries(self, board, pi):
@@ -73,5 +76,7 @@ class HalfchessGame(Game):
 
 	def stringRepresentation(self, board):
 		### TODO: take move counts off of the board_fen in __repr__
-		return ' '.join(board.fen().split()[:-4])
+		#return ' '.join(board.fen().split()[:-4])
+		# board_fen doesn't contain any turn information and should only be used with canonical board
+		return board.board_fen()
 

@@ -44,14 +44,21 @@ class Arena():
                 assert(self.display)
                 print("Turn ", str(it), "Player ", str(curPlayer))
                 print(self.display(board))
+            canonicalBoard = self.game.getCanonicalForm(board, curPlayer)
 
-            action = players[curPlayer+1](self.game.getCanonicalForm(board, curPlayer))
+            action = players[curPlayer+1](canonicalBoard)
 
-            valids = self.game.getValidMoves(self.game.getCanonicalForm(board, curPlayer),1)
+            valids = self.game.getValidMoves(canonicalBoard,1)
 
             if valids[action]==0:
                 print(action)
                 assert valids[action] >0
+
+### MODIFICATION: since the action returned by the net is for the canonical board, mirror the action for the real board if black's turn
+            num_actions = self.game.getActionSize()
+            # since I've set up the actions to be the complement of their mirrors
+            action = int((num_actions - 1) * ((1 - curPlayer)//2) + (curPlayer * action))
+###
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
         if verbose:
             assert(self.display)
