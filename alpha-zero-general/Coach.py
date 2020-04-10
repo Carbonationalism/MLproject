@@ -57,7 +57,7 @@ class Coach():
 
 ### MODIFICATION: again have to take complementary mirrored action for black
             num_actions = self.game.getActionSize()
-            action = int((num_actions - 1) * ((1 - curPlayer)//2) + (curPlayer * action))
+            action = int((num_actions - 1) * ((1 - self.curPlayer)//2) + (self.curPlayer * action))
 ###
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
