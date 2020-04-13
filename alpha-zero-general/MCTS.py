@@ -84,6 +84,8 @@ class MCTS():
 ### MODIFICATION: can't store things like Es since ending depends on move count and we want state indep. of move count
         result = self.game.getGameEnded(canonicalBoard, 1)
         if result != 0:
+            if result not in (-1, 1):
+                result = 0
             return -result
 ###
 
