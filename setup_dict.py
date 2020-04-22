@@ -58,13 +58,40 @@ for square in chess.SQUARES_180_HALF:
 		if move not in moves_med:
 			moves_med[move] = j
 			moves_med[j] = move
-
 			mirrored = mirror(move)
 			moves_med[mirrored] = 599 - j
 			moves_med[599 - j] = mirrored
 			j += 1
 
 	board._clear_board()
+
+forward_moves = {}
+board = chess.Board(None)
+j = 0
+for square in chess.SQUARES_180_HALF:
+	board._set_piece_at(square, chess.QUEEN, chess.WHITE)
+	for move in board.legal_moves.to_uci():
+		forward_moves[move] = j
+		forward_moves[j] = move
+
+                morrored = mirror(move)
+                if mirror not in forward_moves:
+                        forward_moves[mirror] = j
+		j += 1
+
+	board._clear_board()
+	board._set_piece_at(square, chess.KNIGHT, chess.WHITE)
+	for move in board.legal_moves.to_uci():
+		forward_moves[move] = j
+		forward_moves[j] = move
+
+                mirrored = mirror(move)
+                if mirror not in forward_moves:
+                        forward_moves[mirror] = j
+		j += 1
+
+	board._clear_board()
+print('forward moveset size %d'%j)
 
 #TODO: if we use this, need to fix some double counting somewhere
 moves_small = {}
@@ -89,6 +116,7 @@ for square in chess.SQUARES_180_HALF:
 print(len(moves_large) // 2)
 print(len(moves_med) // 2)
 print(len(moves_small) // 2) 
+print(len(forward_moves) // 2)
 
 for n in range(1260):
 	assert(moves_large[n] == mirror(moves_large[1259 - n]))
@@ -99,6 +127,8 @@ with open('med_moveset.pickle', 'wb') as file:
 	pickle.dump(moves_med, file)
 with open('small_moveset.pickle', 'wb') as file:
 	pickle.dump(moves_small, file)
+with open('forward_moveset.pickle', 'wb') as file:
+	pickle.dump(forward_moves, file)
 		
 
 	

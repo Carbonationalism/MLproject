@@ -20,7 +20,7 @@ class HalfchessNNet(nn.Module):
 
 		super(HalfchessNNet, self).__init__()
 
-		self.conv1 = nn.Conv2d(1, args.num_channels, 3, stride=1, padding=1)
+		self.conv1 = nn.Conv2d(10, args.num_channels, 3, stride=1, padding=1)
 		self.conv2 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
 		self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
 		self.conv4 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
@@ -41,7 +41,7 @@ class HalfchessNNet(nn.Module):
 
 	def forward(self, s):
 		# 															s: batch_size x board_x x board_y
-		s = s.view(-1, 1, self.board_x, self.board_y)				# batch_size x 1 x board_x x board_y
+		s = s.view(-1, 10, self.board_x, self.board_y)				# batch_size x 1 x board_x x board_y
 		s = F.relu(self.bn1(self.conv1(s)))							# batch_size x num_channels x board_x x board_y
 		s = F.relu(self.bn2(self.conv2(s)))							# batch_size x num_channels x board_x x board_y
 		s = F.relu(self.bn3(self.conv3(s)))							# batch_size x num_channels x board_x x board_y

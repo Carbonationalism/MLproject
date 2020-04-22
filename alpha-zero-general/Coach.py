@@ -67,7 +67,7 @@ class Coach():
                 ### MODIFICATION:
                 # prevent draws from having any reward
                 if r not in (-1, 1):
-                    r = 0
+                    r = -0.1
                 ###
                 return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]
 

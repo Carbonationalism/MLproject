@@ -79,7 +79,7 @@ STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
     of course these don't really hold up in half chess, in particular
     bishops are probably a lot worse than 3.25
 """
-features = [0, 1, 3, 3.25, 5, 9, 100]
+features = [0, 1, 0, 2, 4, np.array([2,4,6]), 8]
 ### 
 
 
@@ -680,14 +680,16 @@ class BaseBoard:
 
     def attacks_mask(self, square: Square) -> Bitboard:
         bb_square = BB_SQUARES[square]
-
+### MODIFICATION: only return attacks in sideways/forward square
+        color = bool(bb_square & self.occupied_co[WHITE])
+        forward_mask = self.only_forward_moves(square, color)
+        
         if bb_square & self.pawns:
-            color = bool(bb_square & self.occupied_co[WHITE])
-            return BB_PAWN_ATTACKS[color][square]
+            return BB_PAWN_ATTACKS[color][square] & forward_mask
         elif bb_square & self.knights:
-            return BB_KNIGHT_ATTACKS[square]
+            return BB_KNIGHT_ATTACKS[square] & forward_mask
         elif bb_square & self.kings:
-            return BB_KING_ATTACKS[square]
+            return BB_KING_ATTACKS[square] & forward_mask
         else:
             attacks = 0
             if bb_square & self.bishops or bb_square & self.queens:
@@ -695,7 +697,7 @@ class BaseBoard:
             if bb_square & self.rooks or bb_square & self.queens:
                 attacks |= (BB_RANK_ATTACKS[square][BB_RANK_MASKS[square] & self.occupied] |
                             BB_FILE_ATTACKS[square][BB_FILE_MASKS[square] & self.occupied])
-            return attacks
+            return attacks & forward_mask
 
     def attacks(self, square: Square) -> "SquareSet":
         """
@@ -715,7 +717,8 @@ class BaseBoard:
 
         queens_and_rooks = self.queens | self.rooks
         queens_and_bishops = self.queens | self.bishops
-
+### MODIFIED
+        forward_mask = self.only_forward_moves(square, color)
         attackers = (
             (BB_KING_ATTACKS[square] & self.kings) |
             (BB_KNIGHT_ATTACKS[square] & self.knights) |
@@ -724,7 +727,7 @@ class BaseBoard:
             (BB_DIAG_ATTACKS[square][diag_pieces] & queens_and_bishops) |
             (BB_PAWN_ATTACKS[not color][square] & self.pawns))
 
-        return attackers & self.occupied_co[color]
+        return attackers & self.occupied_co[color] & forward_mask
 
     def attackers_mask(self, color: Color, square: Square) -> Bitboard:
         return self._attackers_mask(color, square, self.occupied)
@@ -754,13 +757,14 @@ class BaseBoard:
             return BB_ALL
 
         square_mask = BB_SQUARES[square]
+        forward_mask = self.only_forward_moves(king, color)
 
         for attacks, sliders in [(BB_FILE_ATTACKS, self.rooks | self.queens),
                                  (BB_RANK_ATTACKS, self.rooks | self.queens),
                                  (BB_DIAG_ATTACKS, self.bishops | self.queens)]:
             rays = attacks[king][0]
             if rays & square_mask:
-                snipers = rays & sliders & self.occupied_co[not color]
+                snipers = rays & sliders & self.occupied_co[not color] & forward_mask
                 for sniper in scan_reversed(snipers):
                     if between(sniper, king) & (self.occupied | square_mask) == square_mask:
                         return BB_RAYS[king][sniper]
@@ -1150,15 +1154,22 @@ class BaseBoard:
 
         for square in SQUARES_180_HALF:
             piece = self.piece_at(square)
-
+            #deprecated
             if piece:
-                board.append((-1,1)[piece.color] * features[piece.piece_type])
+                board.append((-1,1)[piece.color])
             else:
                 board.append(0)
         return board
     def toarray(self):
-        return np.asarray(self.tolist()).reshape(8,4)
-###
+        #return np.asarray(self.tolist()).reshape(8,4)
+        res = np.zeros((10, 8 * 4))
+        for i, square in enumerate(SQUARES_180_HALF):
+            piece = self.piece_at(square)
+
+            if piece:                
+                res[features[piece.piece_type] + piece.color, i] = 1
+        return res.reshape(10, 8, 4)
+        ###
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.board_fen()!r})"
@@ -1336,7 +1347,13 @@ class BaseBoard:
         board = cls.empty()
         board.set_chess960_pos(sharnagl)
         return board
-
+    ### MODIFICATION:
+    def only_forward_moves(self, from_square: Square, from_color: Color) -> Bitboard:
+        # return a bitboard mask of only the ranks including the current piece and above (white) or below (black)
+        if from_color == WHITE:
+            return (BB_HALF << (square_rank(from_square) * 8)) & BB_HALF
+        else:
+            return (BB_HALF >> ((7 - square_rank(from_square)) * 8)) & BB_HALF
 
 BoardT = TypeVar("BoardT", bound="Board")
 
@@ -1518,18 +1535,19 @@ class Board(BaseBoard):
         # Generate piece moves.
         non_pawns = our_pieces & ~self.pawns & from_mask
         for from_square in scan_reversed(non_pawns):
-            moves = self.attacks_mask(from_square) & ~our_pieces & to_mask
+            moves = self.attacks_mask(from_square) & ~our_pieces & to_mask & self.only_forward_moves(from_square, self.turn)
             for to_square in scan_reversed(moves):
                 yield Move(from_square, to_square)
 
         # Generate castling moves.
         if from_mask & self.kings:
+            # don't have castling in our variant but this shouldn't be called anyway
             yield from self.generate_castling_moves(from_mask, to_mask)
-
+        return
         # The remaining moves are all pawn moves.
-        pawns = self.pawns & self.occupied_co[self.turn] & from_mask
-        if not pawns:
-            return
+        #pawns = self.pawns & self.occupied_co[self.turn] & from_mask
+        #if not pawns:
+        #    return
 
         # Generate pawn captures.
         capturers = pawns
@@ -1578,25 +1596,26 @@ class Board(BaseBoard):
         # Generate en passant captures.
         if self.ep_square:
             yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
-### MODIFICATION:
+
+
     def generate_pseudo_legal_moves_uci(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[str]:
-            our_pieces = self.occupied_co[self.turn]
+        our_pieces = self.occupied_co[self.turn]
 
-            # Generate piece moves.
-            non_pawns = our_pieces & ~self.pawns & from_mask
-            for from_square in scan_reversed(non_pawns):
-                moves = self.attacks_mask(from_square) & ~our_pieces & to_mask
-                for to_square in scan_reversed(moves):
-                    yield str(Move(from_square, to_square))
+        # Generate piece moves.
+        non_pawns = our_pieces & ~self.pawns & from_mask
+        for from_square in scan_reversed(non_pawns):
+            moves = self.attacks_mask(from_square) & ~our_pieces & to_mask & self.only_forward_moves(from_square, self.turn)
+            for to_square in scan_reversed(moves):
+                yield str(Move(from_square, to_square))
 
-            # no castling in our variant
-            # Generate castling moves.
+        # no castling in our variant
+        # Generate castling moves.
             #if from_mask & self.kings:
             #    yield from self.generate_castling_moves(from_mask, to_mask)
 
             # The remaining moves are all pawn moves.
             # and we have no pawns in our variant either so no need to modify further 
-            return
+        return
             # pawns = self.pawns & self.occupied_co[self.turn] & from_mask
             # if not pawns:
             #     return
@@ -1650,14 +1669,14 @@ class Board(BaseBoard):
             #     yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
 
     def generate_pseudo_legal_moves_lanuci(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[str]:
-            our_pieces = self.occupied_co[self.turn]
+        our_pieces = self.occupied_co[self.turn]
 
             # Generate piece moves.
-            non_pawns = our_pieces & ~self.pawns & from_mask
-            for from_square in scan_reversed(non_pawns):
-                moves = self.attacks_mask(from_square) & ~our_pieces & to_mask
-                for to_square in scan_reversed(moves):
-                    yield str(self.piece_at(from_square)).upper() + str(Move(from_square, to_square))
+        non_pawns = our_pieces & ~self.pawns & from_mask
+        for from_square in scan_reversed(non_pawns):
+            moves = self.attacks_mask(from_square) & ~our_pieces & to_mask & self.only_forward_moves(from_square, self.turn)
+            for to_square in scan_reversed(moves):
+                yield str(self.piece_at(from_square)).upper() + str(Move(from_square, to_square))
 
             # no castling in our variant
             # Generate castling moves.
@@ -1666,7 +1685,7 @@ class Board(BaseBoard):
 
             # The remaining moves are all pawn moves.
             # and we have no pawns in our variant either so no need to modify further 
-            return
+        return
             # pawns = self.pawns & self.occupied_co[self.turn] & from_mask
             # if not pawns:
             #     return
@@ -1724,7 +1743,7 @@ class Board(BaseBoard):
             # Generate piece moves.
             non_pawns = our_pieces & ~self.pawns & from_mask
             for from_square in scan_reversed(non_pawns):
-                moves = self.attacks_mask(from_square) & ~our_pieces & to_mask
+                moves = self.attacks_mask(from_square) & ~our_pieces & to_mask & self.only_forward_moves(from_square, self.turn)
                 for to_square in scan_reversed(moves):
                     #yield Move(from_square, to_square)
                     yield str(self.piece_at(from_square)).upper() + SQUARE_NAMES[to_square]
@@ -1924,30 +1943,30 @@ class Board(BaseBoard):
             return "1-0" if self.turn == WHITE else "0-1"
         elif self.is_variant_draw():
             return "1/2-1/2"
-
+### MODIFICATION: all stalemates are draws in our variant, the only draws are draws by movecount
         # Checkmate.
-        if self.is_checkmate():
+        if self.is_checkmate() or not any(self.generate_legal_moves()) or self.is_insufficient_material():
             return "0-1" if self.turn == WHITE else "1-0"
 
         # Draw claimed.
-        if claim_draw and self.can_claim_draw():
-            return "1/2-1/2"
+        #if claim_draw and self.can_claim_draw():
+        #    return "1/2-1/2"
 
         # Seventyfive-move rule or fivefold repetition.
-        if self.is_seventyfive_moves() or self.is_fivefold_repetition():
-            return "1/2-1/2"
+        #if self.is_seventyfive_moves() or self.is_fivefold_repetition():
+        #    return "1/2-1/2"
 
         # Insufficient material.
-        if self.is_insufficient_material():
-            return "1/2-1/2"
+        #if self.is_insufficient_material():
+        #    return "1/2-1/2"
 
         # Stalemate.
-        if not any(self.generate_legal_moves()):
-            return "1/2-1/2"
+        #if not any(self.generate_legal_moves()):
+        #    return "1/2-1/2"
 
-        # Undetermined.
+        # Undetermined. (move count draw)
         return "*"
-
+###
     def is_checkmate(self) -> bool:
         """Checks if the current position is a checkmate."""
         if not self.is_check():
@@ -3458,9 +3477,9 @@ class Board(BaseBoard):
         attacked = 0
         for checker in scan_reversed(sliders):
             attacked |= BB_RAYS[king][checker] & ~BB_SQUARES[checker]
-
+### MODIFICATION
         if BB_SQUARES[king] & from_mask:
-            for to_square in scan_reversed(BB_KING_ATTACKS[king] & ~self.occupied_co[self.turn] & ~attacked & to_mask):
+            for to_square in scan_reversed(BB_KING_ATTACKS[king] & ~self.occupied_co[self.turn] & ~attacked & to_mask & self.only_forward_moves(king, self.turn)):
                 yield Move(king, to_square)
 
         checker = msb(checkers)
@@ -3480,7 +3499,7 @@ class Board(BaseBoard):
     def generate_legal_moves(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
         if self.is_variant_end():
             return
-
+        
 ### MODIFICATION:
         from_mask = from_mask & BB_HALF
         to_mask = to_mask & BB_HALF
@@ -3505,7 +3524,7 @@ class Board(BaseBoard):
     def generate_legal_moves_uci(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[str]:
             if self.is_variant_end():
                 return
-
+            
             from_mask = from_mask & BB_HALF
             to_mask = to_mask & BB_HALF
 

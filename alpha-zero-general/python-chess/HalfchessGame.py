@@ -1,11 +1,10 @@
 from __future__ import print_function
 import sys
-sys.path.append('..')
 from Game import Game
 import chess
 import numpy as np
 import pickle
-eps=1e-3
+eps=1e-6
 
 class HalfchessGame(Game):
 	"""
@@ -21,10 +20,11 @@ class HalfchessGame(Game):
 		return (8,4)
 
 	def loadActions(self):
-		with open('python-chess/large_moveset.pickle', 'rb') as file:
-		# with open('med_moveset.pickle', 'rb') as file:
-		# with open('small_moveset.pickle', 'rb') as file:
-			self.moveset = pickle.load(file)
+		#with open('python-chess/large_moveset.pickle', 'rb') as file:
+		#with open('python-chess/med_moveset.pickle', 'rb') as file:
+		#with open('small_moveset.pickle', 'rb') as file:
+                with open('forward_moveset.pickle', 'rb') as file:
+                        self.moveset = pickle.load(file)
 
 	def getActionSize(self):
 		return len(self.moveset) // 2
@@ -34,6 +34,8 @@ class HalfchessGame(Game):
 		return the next board state after taking the action
 		"""
 		move = self.moveset[action]
+                if player < 0:
+                        move = mirror(move)
 		if len(move) == 3:
 			board.push_san(move) # todo, ensure this works without 'x' and other stuff
 		else:
@@ -43,8 +45,7 @@ class HalfchessGame(Game):
 
 	def getValidMoves(self, board, player):
 		moves = np.zeros(self.getActionSize())
-		valids = np.array([self.moveset[i] for i in list(board.legal_moves.to_lanuci())])
-
+		valids = np.array([self.moveset[i] for i in list(board.legal_moves.to_uci())])
 		moves[valids] = 1
 		return moves
 

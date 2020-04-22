@@ -31,10 +31,11 @@ hp = HumanPlayer(g).play
 
 # nnet player
 nn = NNet(g)
-nn.load_checkpoint('./pretrained_models/halfchess/pytorch/','1stattempt_best.pth.tar')
-args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
-mcts = MCTS(g, nn, args)
-nnp = lambda x: np.argmax(mcts.getActionProb(x, temp=0))
+# nn.load_checkpoint('./pretrained_models/halfchess/pytorch/','big_jump.pth.tar')
+#nn.load_checkpoint('./temp/', 'best.pth.tar')
+#args = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
+#mcts = MCTS(g, nn, args)
+#nnp = lambda x: np.argmax(mcts.getActionProb(x, temp=0))
 
 
 if human_vs_cpu:
@@ -48,6 +49,6 @@ if human_vs_cpu:
 
 #     player2 = n2p  # Player 2 is neural network if it's cpu vs cpu.
 
-arena = Arena.Arena(rp, nnp, g, display=str)
+arena = Arena.Arena(rp, hp, g, display=str)
 
 print(arena.playGames(2, verbose=True))
