@@ -54,10 +54,10 @@ class Coach():
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
-
+# remod, moved this mirroring into HalfchessGame.py
 ### MODIFICATION: again have to take complementary mirrored action for black
-            num_actions = self.game.getActionSize()
-            action = int((num_actions - 1) * ((1 - self.curPlayer)//2) + (self.curPlayer * action))
+#            num_actions = self.game.getActionSize()
+#            action = int((num_actions - 1) * ((1 - self.curPlayer)//2) + (self.curPlayer * action))
 ###
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
@@ -127,6 +127,7 @@ class Coach():
             self.nnet.train(trainExamples)
             nmcts = MCTS(self.game, self.nnet, self.args)
 
+            # TODO: stop the dirichlet noise in here somewhere
             print('PITTING AGAINST PREVIOUS VERSION')
             arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),
                           lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)

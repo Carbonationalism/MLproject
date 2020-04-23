@@ -23,6 +23,9 @@ class MCTS():
         self.Es = {}        # stores game.getGameEnded ended for board s
         self.Vs = {}        # stores game.getValidMoves for board s
 
+        self.root = game.stringRepresentation(game.getInitBoard())
+        self.noise_added = False
+
         resource.setrlimit(resource.RLIMIT_STACK, (2**29, -1))
         sys.setrecursionlimit(10**6)
 
@@ -35,6 +38,8 @@ class MCTS():
             probs: a policy vector where the probability of the ith action is
                    proportional to Nsa[(s,a)]**(1./temp)
         """
+        if temp == 0:
+            self.noise_added = True #workaround for deterministic behavior in self play eval 
     ### MODIFICATION: store the current board state here so subsequent MCTS don't use the same one
     # TODO: this board_fen doesn't have a turn marker, get one that does
         fen = canonicalBoard.fen()
@@ -43,20 +48,22 @@ class MCTS():
     ###
 
         s = self.game.stringRepresentation(canonicalBoard)
-        counts = [self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
+        counts = np.array([self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
 
         if temp==0:
-            bestA = np.argmax(counts)
-            probs = [0]*len(counts)
-            probs[bestA]=1
-            return probs
+            return (np.argmax(counts) == np.arange(len(counts))).astype(float)
+        #    bestA = np.argmax(counts)
+        #    probs = [0]*len(counts)
+        #    probs[bestA]=1
+        #    return probs
 
         # TODO: vectorize this with numpy since we've got a large action space
-        counts = [x**(1./temp) for x in counts]
-        counts_sum = float(sum(counts))
-        probs = [x/counts_sum for x in counts]
-        return probs
+        return np.float_power(counts, (1./temp)) / np.sum(counts)
+        #counts = [x**(1./temp) for x in counts]
+        #counts_sum = float(sum(counts))
+        #probs = [x/counts_sum for x in counts]
+        #return probs
 
 
     def search(self, canonicalBoard):
@@ -117,6 +124,10 @@ class MCTS():
             self.Ns[s] = 0
             return -v
 
+        if s == self.root and not self.noise_added:
+            self.Ps[s] = 0.75 * self.Ps[s] + 0.25 * np.random.dirichlet(np.ones_like(self.Ps[s]) * self.args.dirichlet)
+            self.noise_added = True # a bit scared I might add extra noise on successive searches from root
+        
         ### TODO: it's validity checking by storing valid moves here 
         # this doesn't really work since the stringRepresentation we're using is player-agnostic
         # we can fix this by A: calling getValidMoves each time instead of storing them but thats slow
@@ -145,7 +156,7 @@ class MCTS():
 
             if u > cur_best:
                 cur_best = u
-                best_act = a              
+                best_act = a
 ###
 
         a = best_act
