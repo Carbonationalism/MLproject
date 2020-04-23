@@ -718,7 +718,7 @@ class BaseBoard:
         queens_and_rooks = self.queens | self.rooks
         queens_and_bishops = self.queens | self.bishops
 ### MODIFIED
-        forward_mask = self.only_forward_moves(square, color)
+        forward_mask = self.only_forward_moves(square, not color)
         attackers = (
             (BB_KING_ATTACKS[square] & self.kings) |
             (BB_KNIGHT_ATTACKS[square] & self.knights) |
@@ -1824,6 +1824,7 @@ class Board(BaseBoard):
         # Get square masks.
         from_mask = BB_SQUARES[move.from_square]
         to_mask = BB_SQUARES[move.to_square]
+        to_mask &= self.only_forward_moves(move.from_square, self.color_at(move.from_square))
 
         # Check turn.
         if not self.occupied_co[self.turn] & from_mask:
@@ -1943,9 +1944,9 @@ class Board(BaseBoard):
             return "1-0" if self.turn == WHITE else "0-1"
         elif self.is_variant_draw():
             return "1/2-1/2"
-### MODIFICATION: all stalemates are draws in our variant, the only draws are draws by movecount
+
         # Checkmate.
-        if self.is_checkmate() or not any(self.generate_legal_moves()) or self.is_insufficient_material():
+        if self.is_checkmate():
             return "0-1" if self.turn == WHITE else "1-0"
 
         # Draw claimed.
@@ -1957,16 +1958,16 @@ class Board(BaseBoard):
         #    return "1/2-1/2"
 
         # Insufficient material.
-        #if self.is_insufficient_material():
-        #    return "1/2-1/2"
+        if self.is_insufficient_material():
+            return "1/2-1/2"
 
         # Stalemate.
-        #if not any(self.generate_legal_moves()):
-        #    return "1/2-1/2"
+        if not any(self.generate_legal_moves()):
+            return "1/2-1/2"
 
         # Undetermined. (move count draw)
         return "*"
-###
+
     def is_checkmate(self) -> bool:
         """Checks if the current position is a checkmate."""
         if not self.is_check():
@@ -1998,31 +1999,41 @@ class Board(BaseBoard):
         This is guaranteed to return ``False`` if *color* can still win the
         game.
 
+        ### MODIFICATION: we use different insufficient materials for our variant:
+        A color has the possibility of as long as it has any non-king piece 
+        in front of or on the same rank as the opposite king
+        
+        Note that this would require a very specific trap in many cases with a 
+        single piece on or below the specified piece 
+        ###
+
         The converse does not necessarily hold:
         The implementation only looks at the material, including the colors
         of bishops, but not considering piece positions. So fortress
         positions or positions with forced lines may return ``False``, even
         though there is no possible winning line.
         """
-        if self.occupied_co[color] & (self.pawns | self.rooks | self.queens):
+        forward_mask = self.only_forward_moves(self.king(not color), not color)
+        
+        if self.occupied_co[color] & (self.bishops | self.rooks | self.queens | self.knights) & forward_mask:
             return False
 
         # Knights are only insufficient material if:
         # (1) We do not have any other pieces, including more than one knight.
         # (2) The opponent does not have pawns, knights, bishops or rooks.
         #     These would allow selfmate.
-        if self.occupied_co[color] & self.knights:
-            return (popcount(self.occupied_co[color]) <= 2 and
-                    not (self.occupied_co[not color] & ~self.kings & ~self.queens))
+        # if self.occupied_co[color] & self.knights:
+        #     return (popcount(self.occupied_co[color]) <= 2 and
+        #             not (self.occupied_co[not color] & ~self.kings & ~self.queens))
 
         # Bishops are only insufficient material if:
         # (1) We do not have any other pieces, including bishops of the
         #     opposite color.
         # (2) The opponent does not have bishops of the opposite color,
         #     pawns or knights. These would allow selfmate.
-        if self.occupied_co[color] & self.bishops:
-            same_color = (not self.bishops & BB_DARK_SQUARES) or (not self.bishops & BB_LIGHT_SQUARES)
-            return same_color and not (self.occupied_co[not color] & ~self.kings & ~self.rooks & ~self.queens)
+        # if self.occupied_co[color] & self.bishops:
+        #     same_color = (not self.bishops & BB_DARK_SQUARES) or (not self.bishops & BB_LIGHT_SQUARES)
+        #     return same_color and not (self.occupied_co[not color] & ~self.kings & ~self.rooks & ~self.queens)
 
         return True
 

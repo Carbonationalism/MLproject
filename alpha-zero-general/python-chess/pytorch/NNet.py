@@ -23,7 +23,7 @@ args = dotdict({
 	'epochs' : 10,
 	'batch_size' : 64,
 	'cuda' : torch.cuda.is_available(),
-	'num_channels' : 512
+	'num_channels' : 256,
 	})
 
 class NNetWrapper(NeuralNet):
@@ -57,7 +57,7 @@ class NNetWrapper(NeuralNet):
 				boards, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
 				## TODO: probably move array conversion out of here to where examples are appended
 				# but then we can't keep game history stored in the boards so idk
-				boards = torch.FloatTensor(np.array([b.toarray() for b in boards]).astype(np.float64))
+				boards = torch.FloatTensor(np.array(boards).astype(np.float64))
 				target_pis = torch.FloatTensor(np.array(pis))
 				target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
 

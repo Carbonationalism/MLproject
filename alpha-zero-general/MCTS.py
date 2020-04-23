@@ -26,8 +26,8 @@ class MCTS():
         self.root = game.stringRepresentation(game.getInitBoard())
         self.noise_added = False
 
-        resource.setrlimit(resource.RLIMIT_STACK, (2**29, -1))
-        sys.setrecursionlimit(10**6)
+        #resource.setrlimit(resource.RLIMIT_STACK, (2**29, -1))
+        #sys.setrecursionlimit(10**6)
 
     def getActionProb(self, canonicalBoard, temp=1):
         """
