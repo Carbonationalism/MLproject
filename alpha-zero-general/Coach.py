@@ -46,8 +46,12 @@ class Coach():
         while True:
             episodeStep += 1
             canonicalBoard = self.game.getCanonicalForm(board,self.curPlayer)
-            temp = int(episodeStep < self.args.tempThreshold)
-
+            thr_1, thr_2 = self.args.tempDecayThreshold, self.args.tempThreshold
+            if thr_1 <= episodeStep and episodeStep < thr_2: # modification: decay temp linearly
+                temp = 1 - ((episodeStep - thr_1)/(thr_2 - thr_1))
+            else:
+                temp = int(episodeStep < thr_1)
+            
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
             sym = self.game.getSymmetries(canonicalBoard, pi)
             for b,p in sym:
@@ -66,10 +70,12 @@ class Coach():
             if r!=0:
                 ### MODIFICATION:
                 # prevent draws from having any reward
+                draw = False
                 if r not in (-1, 1):
-                    r = -0.1
+                    r = 0
+                    draw = True
                 ###
-                return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]
+                return [(x[0],x[2],r*((-1)**((x[1]!=self.curPlayer) & (~draw)))) for x in trainExamples]
 
     def learn(self):
         """

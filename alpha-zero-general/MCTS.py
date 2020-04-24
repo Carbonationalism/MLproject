@@ -59,7 +59,8 @@ class MCTS():
         #    return probs
 
         # TODO: vectorize this with numpy since we've got a large action space
-        return np.float_power(counts, (1./temp)) / np.sum(counts)
+        counts = np.float_power(counts, (1./temp))
+        return counts / np.sum(counts)
         #counts = [x**(1./temp) for x in counts]
         #counts_sum = float(sum(counts))
         #probs = [x/counts_sum for x in counts]

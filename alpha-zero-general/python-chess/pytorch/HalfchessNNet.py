@@ -78,7 +78,7 @@ class HalfchessNNet(nn.Module):
 		s = self.res1(s)											# batch_size x num_channels x board_x x board_y
 		s = self.res2(s)
 		s = self.res3(s)												# batch_size x num_channels x board_x x board_y
-		
+		s = self.se1(s)
 		# now flatten it out
 		s = s.view(-1, self.args.num_channels*self.board_x*self.board_y)
 		s = F.dropout(F.relu(self.fc_bn(self.fc(s))), p=self.args.dropout, training=self.training)	# batch_size x 696
