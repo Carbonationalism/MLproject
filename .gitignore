@@ -4,6 +4,9 @@
 *.out
 *.synctex.gz
 *.pdf
+!MLP.pdf
+*.mp4
+*.pth.tar
 *.bbl
 *.blg
 *.png

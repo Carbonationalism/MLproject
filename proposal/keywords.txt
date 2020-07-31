@@ -1,4 +1,0 @@
-Reinforcement Learning
-Monte Carlo Tree Search
-Alpha Beta Pruning
-openAI gym chess
