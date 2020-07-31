@@ -1,5 +1,4 @@
 # ML Project
----
 
 We used a scaled down alpha-zero approach implemented in python from [suragnair/alpha-zero-general](https://github.com/suragnair/alpha-zero-general) to train a chess bot on a simple chess variant we call halfchess. This layout of this variant is depicted [here](https://www.chessvariants.com/small.dir/halfchess.html), though we also enforce an additional restriction that pieces can only move forward or laterally, not backwards. This greatly simplifies the training process (making it somewhat feasible for a non-distributed alpha zero approach implemented entirely in python) by reducing the game length and total action space. 
 
